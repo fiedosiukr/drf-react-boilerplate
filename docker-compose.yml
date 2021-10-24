@@ -1,0 +1,54 @@
+version: '3.9'
+
+volumes:
+  static:
+  node-modules:
+
+services:
+  backend:
+    container_name: backend
+    build:
+      context: .
+      dockerfile: ./backend/Dockerfile
+    env_file:
+      - .env
+    volumes:
+      - ./backend:/code
+      - static:/code/src/static
+    restart: always
+    entrypoint: /docker/dev-entrypoint.sh
+    command: ['python', 'manage.py', 'runserver', '0.0.0.0:8000']
+    depends_on:
+      - database
+  frontend:
+    container_name: frontend
+    build: ./frontend
+    env_file:
+      - .env
+    volumes:
+      - node-modules:/frontend/node_modules
+      - ./frontend:/frontend
+    restart: always
+    ports:
+      - 3000:3000
+    depends_on:
+      - backend
+  database:
+    image: postgres:14.0
+    container_name: database
+    env_file:
+      - .env
+    volumes:
+      - /var/lib/postgresql/data
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - static:/static
+    ports:
+      - 80:80
+    depends_on:
+      - backend
+      - frontend
+      - database

@@ -1,0 +1,16 @@
+repos:
+-   repo: local
+    hooks:
+        - id: isort
+          name: isort
+          entry: docker-compose exec -T backend bash -c "isort . --check"
+          language: system
+          always_run: true
+          pass_filenames: true
+        
+        - id: black
+          name: black
+          entry: docker-compose exec -T backend bash -c "black . --check"
+          language: system
+          always_run: true
+          pass_filenames: true
